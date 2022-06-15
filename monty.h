@@ -1,12 +1,14 @@
-#ifndef MONTY_SEEN
-#define MONTY_SEEN
+#ifndef MONTY_H
+#define MONTY_H
 
-#include <unistd.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdlib.h>
 #include <ctype.h>
-
 /**
  * struct stack_s - doubly linked list representation of a stack (or queue)
  * @n: integer
@@ -24,7 +26,7 @@ typedef struct stack_s
 } stack_t;
 
 /**
- * struct instruction_s - opcoode and its function
+ * struct instruction_s - opcode and its function
  * @opcode: the opcode
  * @f: function to handle the opcode
  *
@@ -38,62 +40,69 @@ typedef struct instruction_s
 } instruction_t;
 
 /**
- * struct vars_s - holds all variables to be passed
- * @IFO: flag to determine stack(0) or queue(1)
- * @fname: string holding file name
- * @fp: file pointer to open file
- * @tokened: tokenized string of our input from file
- * @head: head of our stack
- * @line_number: line number that was just read from file
- * @buf: buffer for the line in the file
+ * struct buf_struct - Global buffers.
+ * @read_buff: Buffer for read.
+ * @list_cmd: Tokenized read buffer.
+ * @tok_cmd: Tokenize each token from previous split based on spaces.
+ * @argv: Arguments from command line.
  *
- * Description: A struct that we make global to pass variables
- *  for stack, queues, LIFO, FIFO holberton project
+ * Description: - Buffers used globally throughout files.
  */
-typedef struct vars_s
+typedef struct buf_struct
 {
-	int IFO;
-	char *fname;
-	FILE *fp;
-	char **tokened;
-	char *buf;
-	struct stack_s *head;
-	unsigned int line_number;
-} vars_t;
+	char read_buff[4096];
+	char *list_cmd[1000];
+	char *tok_cmd[1000];
+	char **argv;
+} buf_struct;
 
-extern vars_t *element;
 
-/* Stack functions stackfunc_1.c */
-stack_t *add_stack_init(void);
-stack_t *add_stack_end(void);
-void get_tokens(char *buf);
-void pall(stack_t **stack, unsigned int line_number);
-void push(stack_t **stack, unsigned int line_number);
-/* More stack functions stackfunc_2.c */
-void pint(stack_t **stack, unsigned int line_number);
-void pop(stack_t **stack, unsigned int line_number);
-void nop(stack_t **stack, unsigned int line_number);
-void swap(stack_t **stack, unsigned int line_number);
-/* Calculation functions calc.c */
-void add(stack_t **stack, unsigned int line_number);
-void divide(stack_t **stack, unsigned int line_number);
-void mul(stack_t **stack, unsigned int line_number);
-void sub(stack_t **stack, unsigned int line_number);
-void mod(stack_t **stack, unsigned int line_number);
-/* Function finder opcode_search.c */
-void opcode_search(void);
-/* Stack function in stackfunc_3.c */
-void pchar(stack_t **stack, unsigned int line_number);
-void pstr(stack_t **stack, unsigned int line_number);
-void rotl(stack_t **stack, unsigned int line_number);
-void rotr(stack_t **stack, unsigned int line_number);
-/* Exit, free, and error handling error in free_stack.c */
-void free_buffer(void);
-void free_token(void);
-void free_list(stack_t *head);
-void exit_function(unsigned int err_num);
-/* Changes between Stack and Queue in lifo_or_fifo.c */
-void lifo(stack_t **stack, unsigned int line_number);
-void fifo(stack_t **stack, unsigned int line_number);
+/* Execute functions */
 
-#endif
+void (*get_op_func(char *s))(stack_t **stack, unsigned int line_number);
+void exec_loop(buf_struct *a);
+
+/* End of execute functions */
+
+/* String functions */
+
+char **split_spaces(char *buff, buf_struct *a);
+char **split_newline(buf_struct *a);
+buf_struct *make_struct(char *argv[]);
+
+/*End of string functions */
+
+/* Doubly linked list functions */
+
+void free_stack(stack_t *head);
+
+/* End of Doubly linked list functions */
+
+/* Helper functions */
+
+int digits_only(char *str);
+
+/* End of helper functions */
+
+/* monty functions */
+
+stack_t *push(stack_t **head, int n);
+void pall(stack_t **h, unsigned int line_n);
+void pint(stack_t **h, unsigned int line_n);
+void pop(stack_t **h, unsigned int line_n);
+void swap(stack_t **stack, unsigned int line_n);
+void add(stack_t **stack, unsigned int line_n);
+void sub(stack_t **stack, unsigned int line_n);
+void _div(stack_t **stack, unsigned int line_n);
+void mod(stack_t **stack, unsigned int line_n);
+void mul(stack_t **stack, unsigned int line_n);
+void nop(stack_t **stack, unsigned int line_n);
+void pchar(stack_t **stack, unsigned int line_n);
+void pstr(stack_t **stack, unsigned int line_n);
+void rotl(stack_t **stack, unsigned int line_n);
+void rotr(stack_t **stack, unsigned int line_n);
+void queue(stack_t **stack, unsigned int line_n);
+
+/* end of monty functions */
+
+#endif /*MONTY_H*/

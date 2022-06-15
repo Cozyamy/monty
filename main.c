@@ -1,86 +1,48 @@
 #include "monty.h"
-
 /**
- * main - monty interperter
- * @ac: the number of arguments
- * @av: the arguments
- * Return: void
+ * make_struct - Set values for struct.
+ * @argv: Argument list.
+ * Return: Struct for buffers.
  */
-int main(int ac, char *av[])
+buf_struct *make_struct(char *argv[])
 {
-	stack_t *stack = NULL;
-	static char *string[1000] = {NULL};
-	int n = 0;
-	FILE *fd;
-	size_t bufsize = 1000;
+	static buf_struct a;
 
-	if (ac != 2)
+	a.argv = argv;
+	memset(a.read_buff, 0, sizeof(a.read_buff));
+	memset(a.list_cmd, 0, sizeof(a.list_cmd));
+	memset(a.tok_cmd, 0, sizeof(a.tok_cmd));
+
+	return (&a);
+}
+/**
+ * main - Takes argument list and executes file given.
+ * @argc: Argument count.
+ * @argv: List of arguments.
+ * Return: 0.
+ */
+int main(int argc, char *argv[])
+{
+	int fd;
+	buf_struct *a;
+
+	a = make_struct(argv);
+
+	if (argc != 2)
 	{
 		fprintf(stderr, "USAGE: monty file\n");
 		exit(EXIT_FAILURE);
 	}
-	fd = fopen(av[1], "r");
-	if (fd == NULL)
+	while ((fd = open(argv[1], O_RDONLY)) == -1)
 	{
-		fprintf(stderr, "Error: Can't open file %s\n", av[1]);
+		fprintf(stderr, "Error: Can't open file %s\n", argv[1]);
 		exit(EXIT_FAILURE);
 	}
 
+	read(fd, a->read_buff, 4096);
+	close(fd);
+	split_newline(a);
+	exec_loop(a);
 
-	for (n = 0; getline(&(string[n]), &bufsize, fd) > 0; n++)
-		;
-	execute(string, stack);
-	free_list(string);
-	fclose(fd);
 	return (0);
-}
-
-/**
- * execute - executes opcodes
- * @string: contents of file
- * @stack: the list
- * Return: void
- */
-
-void execute(char *string[], stack_t *stack)
-{
-	int ln, n, i;
-
-	instruction_t st[] = {
-		{"pall", pall},
-		{"pint", pint},
-		{"add", add},
-		{"swap", swap},
-		{"pop", pop},
-		{"null", NULL}
-	};
-
-	for (ln = 1, n = 0; string[n + 1]; n++, ln++)
-	{
-		if (_strcmp("push", string[n]))
-			push(&stack, ln, pushint(string[n], ln));
-		else if (_strcmp("nop", string[n]))
-			;
-		else
-		{
-			i = 0;
-			while (!_strcmp(st[i].opcode, "null"))
-			{
-				if (_strcmp(st[i].opcode, string[n]))
-				{
-					st[i].f(&stack, ln);
-					break;
-				}
-				i++;
-			}
-			if (_strcmp(st[i].opcode, "null") && !_strcmp(string[n], "\n"))
-			{
-				fprintf(stderr, "L%u: unknown instruction %s", ln, string[n]);
-				if (!nlfind(string[n]))
-					fprintf(stderr, "\n");
-				exit(EXIT_FAILURE);
-			}
-		}
-	}
-	free_stack(stack);
 }
