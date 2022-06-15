@@ -1,20 +1,14 @@
-print H
-+++++++++[>++++++++<-]>.
-print o
-<+++++[>++++++++<-]>-.
-print l
----.
-print b
+print s
 <++[>-----<-]>.
-print e
+print c
 +++.
-print r
+print h
 <++++[>+++<-]>+.
-print t
+print o
 ++.
 print o
 -----.
-print n
+print l
 -.
 print newline
 <++++++++++.
